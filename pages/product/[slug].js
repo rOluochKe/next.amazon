@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import NextLink from 'next/link'
 import Image from 'next/image'
 import {
@@ -14,16 +14,35 @@ import {
 } from '@material-ui/core'
 import Product from '../../models/Product'
 import db from '../../utils/db'
+import axios from 'axios'
+import { Store } from '../../utils/Store'
+import { useRouter } from 'next/router'
 import { Layout } from '../../components/Layout'
 import Rating from '@material-ui/lab/Rating'
 import useStyles from '../../utils/styles'
 
 export default function ProductScreen(props) {
+  const router = useRouter()
+  const { state, dispatch } = useContext(Store)
   const classes = useStyles()
   const { product } = props
 
   if (!product) {
     return <div>Product Not Found!</div>
+  }
+
+  const addToCartHandler = async () => {
+    const existItem = state.cart.cartItems.find((x) => x._id === product._id)
+    const quantity = existItem ? existItem.quantity + 1 : 1
+    const { data } = await axios.get(`/api/products/${product._id}`)
+
+    if (data.countInStock < quantity) {
+      window.alert('Sorry. Product is out of stock')
+      return
+    }
+
+    dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity } })
+    router.push('/cart')
   }
 
   return (
@@ -95,7 +114,12 @@ export default function ProductScreen(props) {
                 </Grid>
               </ListItem>
               <ListItem>
-                <Button fullWidth variant='contained' color='primary'>
+                <Button
+                  fullWidth
+                  variant='contained'
+                  color='primary'
+                  onClick={addToCartHandler}
+                >
                   Add to cart
                 </Button>
               </ListItem>

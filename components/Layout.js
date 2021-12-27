@@ -12,14 +12,18 @@ import {
   ThemeProvider,
   CssBaseline,
   Switch,
+  Badge,
 } from '@material-ui/core'
 
 import useStyles from '../utils/styles'
 import { Store } from '../utils/Store'
+import axios from 'axios'
+import { useRouter } from 'next/router'
 
 export const Layout = ({ title, description, children }) => {
+  const router = useRouter()
   const { state, dispatch } = useContext(Store)
-  const { darkMode, cart, userInfo } = state
+  const { darkMode, cart } = state
 
   const theme = createTheme({
     typography: {
@@ -74,7 +78,20 @@ export const Layout = ({ title, description, children }) => {
                 onChange={darkModeChangeHandler}
               ></Switch>
               <NextLink href='/cart' passHref>
-                <Link>Cart</Link>
+                <Link>
+                  <Typography component='span'>
+                    {cart.cartItems.length > 0 ? (
+                      <Badge
+                        color='secondary'
+                        badgeContent={cart.cartItems.length}
+                      >
+                        Cart
+                      </Badge>
+                    ) : (
+                      'Cart'
+                    )}
+                  </Typography>
+                </Link>
               </NextLink>
               <NextLink href='/login' passHref>
                 <Link>Login</Link>
